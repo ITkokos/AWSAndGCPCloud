@@ -3,7 +3,11 @@ package stepDefinitions;
 import cucumber.api.java8.En;
 import steps.GCPCloudSteps;
 
+import java.util.concurrent.Callable;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.awaitility.Awaitility.await;
 import static steps.GCPCloudSteps.*;
 
 public class GCPCloudDefinitionSteps implements En {
@@ -18,6 +22,11 @@ public class GCPCloudDefinitionSteps implements En {
                     .isEqualTo(isFileNameInGCPExisted(fileName, bucketName));
         });
 
+        And("^Wait for \"([^\"]*)\" file to appear in GCP \"([^\"]*)\" bucket", (String fileName, String bucketName) -> {
+            await("Awaiting for " + fileName + " file in GCP " + bucketName + " bucket").atMost(60, SECONDS)
+                    .until(() -> isFileNameInGCPExisted(fileName, bucketName));
+        });
+
         And("^Download file \"([^\"]*)\" from GCP \"([^\"]*)\" bucket$", GCPCloudSteps::downloadFileFromGCPBucket);
 
         And("^Delete file \"([^\"]*)\" from GCP \"([^\"]*)\" bucket$", GCPCloudSteps::deleteFileFromGCPBucket);
@@ -26,6 +35,6 @@ public class GCPCloudDefinitionSteps implements En {
             assertThat(totalCount).as("Number of records are different")
                     .isEqualTo(getTotalCountRecordsFromGCPTable(totalCount, tableName));
         });
-    }
 
+    }
 }
